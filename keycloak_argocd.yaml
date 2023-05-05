@@ -1,0 +1,106 @@
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: keycloak-helm
+#   namespace: argocd
+# spec:
+#   project: default
+#   source:
+#     repoURL: https://charts.bitnami.com/bitnami
+#     targetRevision: 14.0.0
+#     #path: keycloak
+#     # files:
+#     #       - path: keycloak/manifests/ingress_keycloak.yaml
+#     chart: keycloak
+#     #path: dev
+#     # files:
+#     #       - path: clusters/hml/iza-hml/apps/**/argocd_config.yaml
+#     helm:
+#       valueFiles:
+#         - values.yaml
+#       # parameters:
+#       # - name: "nginx-ingress.controller.service.annotations.external-dns\\.alpha\\.kubernetes\\.io/hostname"
+#       #   value: keycloak.aws.newbusinessdev.local
+#         # - name: keycloak
+#         #   value: keycloak-val
+#       # releaseName: keycloak
+
+#       # values: |
+#       #    ingress:
+#       #      enabled: true
+#       #      ingressClassName: nginx
+#       #      hosts:
+#       #        - host: keycloak.aws.newbusinessdev.local
+#       #          paths:
+#       #            - path: /
+#       #              pathType: ImplementationSpecific
+#       #      annotations:
+#       #        nginx.ingress.kubernetes.io/ssl-redirect: "false"
+#       #        nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+#       #        nginx.ingress.kubernetes.io/rewrite-target: /      
+#       values: |
+#           ingress:
+#             enabled: false
+#             ingressClassName: nginx
+#             annotations:
+#               nginx.ingress.kubernetes.io/ssl-redirect: "false"
+#               nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+#               nginx.ingress.kubernetes.io/rewrite-target: /
+#             path: /
+#             hosts:
+#               - keycloak.aws.newbusinessdev.local
+              
+#   destination:
+#     server: "https://kubernetes.default.svc"
+#     namespace: keycloak
+
+#   syncPolicy:
+#     syncOptions:
+#     - CreateNamespace=true
+
+#     automated:
+#       selfHeal: true
+#       prune: true
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: keycloak-helm
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: 14.0.0
+    #path: keycloak/helm
+    # files:
+    #       - path: keycloak/manifests/ingress_keycloak.yaml
+    chart: keycloak
+    #path: dev
+    # files:
+    #       - path: clusters/hml/iza-hml/apps/**/argocd_config.yaml
+    helm:
+      valueFiles:
+        - values.yaml
+      # values: |
+      #     ingress:
+      #       enabled: false
+      #       ingressClassName: nginx
+      #       annotations:
+      #         nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      #         nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+      #         nginx.ingress.kubernetes.io/rewrite-target: /
+      #       path: /
+      #       hosts:
+      #         - keycloak.aws.newbusinessdev.local
+              
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: keycloak
+
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+
+    automated:
+      selfHeal: true
+      prune: true
