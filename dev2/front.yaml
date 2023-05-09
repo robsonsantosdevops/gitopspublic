@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meu-site-estatico
+  namespace: teste2
+  labels:
+    app: site-estatico
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: site-estatico
+  template:
+    metadata:
+      labels:
+        app: site-estatico
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: site-estatico
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: site-estatico
+        configMap:
+          name: site-estatico-configmap
+          items:
+          - key: index.html
+            path: index.html
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: site-estatico-configmap
+  namespace: teste2
+data:
+  index.html: |
+    <html>
+      <head>
+        <title>Meu Site Estático</title>
+      </head>
+      <body>
+        <h1>Bem-vindo ao meu site estático!</h1>
+      </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: site-estatico
+  namespace: teste2
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: site-estatico
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+items:
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    name: site-estatico
+    namespace: teste2
+  spec:
+    ingressClassName: nginx
+    rules:
+    - host: site.spacesecuritynetwork.local
+      http:
+        paths:
+        - backend:
+            service:
+              name: site-estatico
+              port:
+                number: 80
+          path: /
+          pathType: ImplementationSpecific
+kind: List
+metadata:
+  resourceVersion: ""

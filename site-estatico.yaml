@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: site-estatico
+  namespace: teste2
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: guestbook-ui
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
