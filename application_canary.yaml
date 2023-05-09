@@ -1,0 +1,149 @@
+# # apiVersion: argoproj.io/v1alpha1
+# # kind: Application
+# # metadata:
+# #   name: teste-argo-canary
+# #   namespace: argocd
+# # spec:
+# #   project: default
+
+# #   source:
+# #     repoURL: 'https://github.com/robsonsantosdevops/gitopspublic.git'
+# #     targetRevision: HEAD
+# #     path: dev
+# #   destination: 
+# #     server: https://kubernetes.default.svc
+# #     namespace: teste2
+
+# #   syncPolicy:
+# #     syncOptions:
+# #     - CreateNamespace=true
+
+# #     automated:
+# #       selfHeal: true
+# #       prune: true
+# #   # Configurações do Canary Deployment
+# #   deployment:
+# #     # Estratégia de implantação em canário
+# #     strategy: Canary
+# #     canary:
+# #       steps: 2
+# #       # Método de roteamento de tráfego
+# #       trafficRouting:
+# #         # Roteamento ponderado
+# #         weighted:
+# #           primaryWeight: 90
+# #           canaryWeight: 10
+# #       # Métricas para análise
+# #       analysis:
+# #         interval: 30s
+# #         threshold: 5
+# #         metrics:
+# #         - name: latency
+# #           threshold: 100
+# #         - name: error_rate
+# #           threshold: 1
+# #   # Definição do deployment Kubernetes
+# #   # sync:
+# #   #   manifests:
+# #   #   - kustomization.yaml
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: teste-argo-canary
+#   namespace: argocd
+# spec:
+#   project: gitops2
+
+#   source:
+#     repoURL: 'https://github.com/robsonsantosdevops/gitopspublic.git'
+#     targetRevision: HEAD
+#     path: dev2
+#   destination: 
+#     server: https://kubernetes.default.svc
+#     namespace: teste2
+
+#   syncPolicy:
+#     syncOptions:
+#     - CreateNamespace=true
+
+#     automated:
+#       selfHeal: true
+#       prune: true
+# ---
+# # this manually creates the default project
+# apiVersion: argoproj.io/v1alpha1
+# kind: AppProject
+# metadata:
+#   name: gitops2
+#   namespace: argocd
+# spec:
+#   sourceRepos:
+#     - '*'
+#   destinations:
+#     - namespace: '*'
+#       server: '*'
+#   clusterResourceWhitelist:
+#     - group: '*'
+#       kind: '*'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: teste-argo-canary
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: 'https://github.com/robsonsantosdevops/gitopspublic.git'
+    targetRevision: HEAD
+    path: dev
+  destination: 
+    server: https://kubernetes.default.svc
+    namespace: teste2
+
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+
+    automated:
+      selfHeal: true
+      prune: true
+  # Configurações do Canary Deployment
+  deployment:
+    # Estratégia de implantação em canário
+    strategy: Canary
+    canary:
+      steps: 2
+      # Método de roteamento de tráfego
+      trafficRouting:
+        # Roteamento ponderado
+        weighted:
+          primaryWeight: 90
+          canaryWeight: 10
+      # Métricas para análise
+      analysis:
+        interval: 30s
+        threshold: 5
+        metrics:
+        - name: latency
+          threshold: 100
+        - name: error_rate
+          threshold: 1
+---
+# Inclui o arquivo kustomization.yaml no manifesto YAML
+kustomization.yaml: |
+  apiVersion: kustomize.config.k8s.io/v1beta1
+  kind: Kustomization
+  namespace: teste2
+  resources:
+  - dev3/
+
+
+# apiVersion: kustomize.config.k8s.io/v1beta1
+# kind: Kustomization
+# namespace: teste2
+# resources:
+# - my-deployment-directory/
+# - my-other-directory/
