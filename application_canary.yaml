@@ -1,199 +1,121 @@
-# # # apiVersion: argoproj.io/v1alpha1
-# # # kind: Application
-# # # metadata:
-# # #   name: teste-argo-canary
-# # #   namespace: argocd
-# # # spec:
-# # #   project: default
-
-# # #   source:
-# # #     repoURL: 'https://github.com/robsonsantosdevops/gitopspublic.git'
-# # #     targetRevision: HEAD
-# # #     path: dev
-# # #   destination: 
-# # #     server: https://kubernetes.default.svc
-# # #     namespace: teste2
-
-# # #   syncPolicy:
-# # #     syncOptions:
-# # #     - CreateNamespace=true
-
-# # #     automated:
-# # #       selfHeal: true
-# # #       prune: true
-# # #   # Configurações do Canary Deployment
-# # #   deployment:
-# # #     # Estratégia de implantação em canário
-# # #     strategy: Canary
-# # #     canary:
-# # #       steps: 2
-# # #       # Método de roteamento de tráfego
-# # #       trafficRouting:
-# # #         # Roteamento ponderado
-# # #         weighted:
-# # #           primaryWeight: 90
-# # #           canaryWeight: 10
-# # #       # Métricas para análise
-# # #       analysis:
-# # #         interval: 30s
-# # #         threshold: 5
-# # #         metrics:
-# # #         - name: latency
-# # #           threshold: 100
-# # #         - name: error_rate
-# # #           threshold: 1
-# # #   # Definição do deployment Kubernetes
-# # #   # sync:
-# # #   #   manifests:
-# # #   #   - kustomization.yaml
-# # ---
 # # apiVersion: argoproj.io/v1alpha1
-# # kind: Application
+# # kind: Rollout
 # # metadata:
 # #   name: teste-argo-canary
 # #   namespace: argocd
 # # spec:
-# #   project: gitops2
+# #   targetSize: 50%
+# #   selector:
+# #     matchLabels:
+# #       app: teste-argo-canary
+# #   template:
+# #     metadata:
+# #       labels:
+# #         app: teste-argo-canary
+# #     spec:
+# #       containers:
+# #       - name: nginx
+# #         image: nginx:1.19.0
+# #         ports:
+# #         - containerPort: 80
+# #         readinessProbe:
+# #           httpGet:
+# #             path: /
+# #             port: 80
+# #         livenessProbe:
+# #           httpGet:
+# #             path: /
+# #             port: 80
+# #       replicas: 1
+# #       annotations:
+# #         argocd.argoproj.io/sync-wave: "10"
+# #         argocd.argoproj.io/sync-options: SkipDryRun=true
 
+# #   strategy:
+# #     canary:
+# #       steps:
+# #       - setWeight: 10
+# #         pause:
+# #           duration: 5m
+# #       - setWeight: 20
+# #         pause:
+# #           duration: 5m
+# #       - setWeight: 30
+# #         pause:
+# #           duration: 5m
+# #       - setWeight: 40
+# #         pause:
+# #           duration: 5m
+# #       - setWeight: 50
+# #         pause:
+# #           duration: 5m
+# #       - setWeight: 100
+# #     maxSurge: 1
+# #     maxUnavailable: 0
+# #     type: RollingUpdate
 # #   source:
-# #     repoURL: 'https://github.com/robsonsantosdevops/gitopspublic.git'
-# #     targetRevision: HEAD
-# #     path: dev2
-# #   destination: 
-# #     server: https://kubernetes.default.svc
-# #     namespace: teste2
-
-# #   syncPolicy:
-# #     syncOptions:
-# #     - CreateNamespace=true
-
-# #     automated:
-# #       selfHeal: true
-# #       prune: true
-# # ---
-# # # this manually creates the default project
-# # apiVersion: argoproj.io/v1alpha1
-# # kind: AppProject
-# # metadata:
-# #   name: gitops2
-# #   namespace: argocd
-# # spec:
-# #   sourceRepos:
-# #     - '*'
-# #   destinations:
-# #     - namespace: '*'
-# #       server: '*'
-# #   clusterResourceWhitelist:
-# #     - group: '*'
-# #       kind: '*'
+# #     applicationSource:
+# #       repoURL: 'https://github.com/robsonsantosdevops/gitopspublic.git'
+# #       path: dev2
+# #       targetRevision: HEAD
+# #       helm:
+# #         releaseName: teste-argo-canary
+# #       directory:
+# #         recurse: true
+# #       plugin:
+# #         name: helm
 # ---
 # apiVersion: argoproj.io/v1alpha1
-# kind: Application
+# kind: Rollout
 # metadata:
-#   name: teste-argo-canary
-#   namespace: argocd
+#   name: teste-argo-canary-rollout
 # spec:
-#   project: default
-
-#   source:
-#     repoURL: 'https://github.com/robsonsantosdevops/gitopspublic.git'
-#     targetRevision: HEAD
-#     path: dev
-#   destination: 
-#     server: https://kubernetes.default.svc
-#     namespace: teste2
-
-#   syncPolicy:
-#     syncOptions:
-#     - CreateNamespace=true
-
-#     automated:
-#       selfHeal: true
-#       prune: true
-#   # Configurações do Canary Deployment
-#   deployment:
-#     # Estratégia de implantação em canário
-#     strategy: Canary
-#     canary:
-#       steps: 2
-#       # Método de roteamento de tráfego
-#       trafficRouting:
-#         # Roteamento ponderado
-#         weighted:
-#           primaryWeight: 90
-#           canaryWeight: 10
-#       # Métricas para análise
-#       analysis:
-#         interval: 30s
-#         threshold: 5
-#         metrics:
-#         - name: latency
-#           threshold: 100
-#         - name: error_rate
-#           threshold: 1
-#   sync:
-#     manifests:
-#     - dev3/kustomization.yaml
-# ---
-# # # Inclui o arquivo kustomization.yaml no manifesto YAML
-# # kustomization.yaml: |
-# #   apiVersion: kustomize.config.k8s.io/v1beta1
-# #   kind: Kustomization
-# #   namespace: teste2
-# #   resources:
-# #   - dev3/
-
-
-# # apiVersion: kustomize.config.k8s.io/v1beta1
-# # kind: Kustomization
-# # namespace: teste2
-# # resources:
-# # - my-deployment-directory/
-# # - my-other-directory/
----
+#   replicas: 10
+#   selector:
+#     matchLabels:
+#       app: nginx
+#   template:
+#     metadata:
+#       labels:
+#         app: nginx
+#     spec:
+#       containers:
+#       - name: nginx
+#         image: nginx:1.15.4
+#         ports:
+#         - containerPort: 80
+#   minReadySeconds: 30
+#   revisionHistoryLimit: 3
+#   strategy:
+#     canary: #Indicates that the rollout should use the Canary strategy
+#       maxSurge: "25%"
+#       maxUnavailable: 0
+#       steps:
+#       - setWeight: 10
+#       - pause:
+#           duration: 1h # 1 hour
+#       - setWeight: 20
+#       - pause: {} # pause indefinitely
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: canary
-  namespace: default
+  name: teste-argo-canary-rollout
+  namespace: teste2
 spec:
-  replicas: 2
+  replicas: 10
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause: {duration: 10}
+      - setWeight: 40
+      - pause: {duration: 10}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}
+      - setWeight: 100    
+  revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: canary
-  template:
-    metadata:
-      labels:
-        app: canary
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:latest
-        ports:
-        - containerPort: 80
-        volumeMounts:
-        - name: html
-          mountPath: /usr/share/nginx/html
-      volumes:
-      - name: html
-        configMap:
-          name: canary-html
-          items:
-          - key: index.html
-            path: index.html
-      strategy:
-        canary:
-          steps:
-          - setWeight: 20
-            pause:
-              duration: 1m
-          - setWeight: 40
-            pause:
-              duration: 1m
-          - setWeight: 60
-            pause:
-              duration: 1m
-          - setWeight: 80
-            pause:
-              duration: 1m
-          - setWeight: 100
+      app: meu-site-estatico

@@ -1,18 +1,18 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: teste-argo-application
+  name: teste-argo-canary
   namespace: argocd
 spec:
-  project: default
+  project: gitops2
 
   source:
-    repoURL: https://gitlab.com/devops-iac1/teste.git
+    repoURL: 'https://github.com/robsonsantosdevops/gitopspublic.git'
     targetRevision: HEAD
-    path: dev
+    path: dev2
   destination: 
     server: https://kubernetes.default.svc
-    namespace: teste
+    namespace: teste2
 
   syncPolicy:
     syncOptions:
@@ -21,3 +21,19 @@ spec:
     automated:
       selfHeal: true
       prune: true
+---
+# this manually creates the default project
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: gitops2
+  namespace: argocd
+spec:
+  sourceRepos:
+    - '*'
+  destinations:
+    - namespace: '*'
+      server: '*'
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'

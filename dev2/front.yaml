@@ -40,10 +40,10 @@ data:
   index.html: |
     <html>
       <head>
-        <title>Meu Site Estático</title>
+        <title>Meu Site Estático v2</title>
       </head>
       <body>
-        <h1>Bem-vindo ao meu site estático!</h1>
+        <h1>Bem-vindo ao meu site estático v2!</h1>
       </body>
     </html>
 ---
