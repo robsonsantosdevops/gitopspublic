@@ -96,26 +96,82 @@
 #           duration: 1h # 1 hour
 #       - setWeight: 20
 #       - pause: {} # pause indefinitely
+# apiVersion: argoproj.io/v1alpha1
+# kind: Rollout
+# metadata:
+#   name: site-estatico-rollout
+#   namespace: teste2
+# spec:
+#   replicas: 10
+#   strategy:
+#     canary:
+#       steps:
+#       - setWeight: 20
+#       - pause: {duration: 10}
+#       - setWeight: 40
+#       - pause: {duration: 10}
+#       - setWeight: 60
+#       - pause: {duration: 10}
+#       - setWeight: 80
+#       - pause: {duration: 10}
+#       - setWeight: 100    
+#   revisionHistoryLimit: 2
+#   selector:
+#     matchLabels:
+#       app: site-estatico
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: teste-argo-canary-rollout
+  name: nginx-deployment
   namespace: teste2
 spec:
   replicas: 10
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
   strategy:
     canary:
       steps:
       - setWeight: 20
-      - pause: {duration: 10}
-      - setWeight: 40
-      - pause: {duration: 10}
-      - setWeight: 60
-      - pause: {duration: 10}
+      - pause: {duration: 30}
+      - setWeight: 50
+      - pause: {duration: 60}
       - setWeight: 80
-      - pause: {duration: 10}
-      - setWeight: 100    
-  revisionHistoryLimit: 2
-  selector:
-    matchLabels:
-      app: meu-site-estatico
+      - pause: {}
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: Rollout
+# metadata:
+#   name: chip
+#   namespace: chip
+# spec:
+#   replicas: 10
+#   strategy:
+#     canary:
+#       steps:
+#       - setWeight: 20
+#       - pause: {duration: 10}
+#       - setWeight: 40
+#       - pause: {duration: 10}
+#       - setWeight: 60
+#       - pause: {duration: 10}
+#       - setWeight: 80
+#       - pause: {duration: 10}
+#       - setWeight: 100    
+#   revisionHistoryLimit: 2
+#   selector:
+#     matchLabels:
+#       app: chip
