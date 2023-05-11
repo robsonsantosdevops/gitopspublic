@@ -24,6 +24,7 @@ items:
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
     name: rollouts-ingress
+    namespace: teste3
   spec:
     ingressClassName: nginx
     rules:
