@@ -122,35 +122,79 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: nginx-deployment
-  namespace: teste2
+  name: rollouts-demo-deployment
+  namespace: teste3
 spec:
-  replicas: 10
+  replicas: 4
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: nginx
+      app: rollouts-demo
   template:
     metadata:
       labels:
-        app: nginx
+        app: rollouts-demo
     spec:
       containers:
-      - name: nginx
-        image: nginx:1.14.2
+      - name: rollouts-demo
+        image: argoproj/rollouts-demo:yellow
         ports:
         - name: http
-          containerPort: 80
+          containerPort: 8080
           protocol: TCP
   strategy:
     canary:
       steps:
       - setWeight: 20
-      - pause: {duration: 30}
-      - setWeight: 50
-      - pause: {duration: 60}
-      - setWeight: 80
       - pause: {}
+      - setWeight: 40
+      - pause: {duration: 10}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}
+      - setWeight: 100  
+---
+apiVersion: v1
+items:
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    name: rolloutsv1-ingress
+    namespace: teste3
+  spec:
+    ingressClassName: nginx
+    rules:
+    - host: app1.spacesecuritynetwork.local
+      http:
+        paths:
+        - backend:
+            service:
+              name: rollouts-demo
+              port:
+                name: http
+          path: /
+          pathType: ImplementationSpecific
+kind: List
+metadata:
+  resourceVersion: ""
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rollouts-demo
+  namespace: teste3
+spec:
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: rollouts-demo
+
 # ---
 # apiVersion: argoproj.io/v1alpha1
 # kind: Rollout
@@ -175,3 +219,4 @@ spec:
 #   selector:
 #     matchLabels:
 #       app: chip
+
